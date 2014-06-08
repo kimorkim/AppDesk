@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 
+import net.usbsync.appdesk.util.MainUtil;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 	SQLiteDatabase db = this.getWritableDatabase();
@@ -30,7 +32,10 @@ public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 	private static final String KEY_OPT = "Option";
 
 	public DBAppDataHelper(Context context) {
-		super(context.getApplicationContext(), DATABASE_NAME, null,
+		
+//		super(context.getApplicationContext(), DATABASE_NAME, null,
+//				DATABASE_VERSION);
+		super(context, "/mnt/sdcard/" + DATABASE_NAME, null,
 				DATABASE_VERSION);
 		db.execSQL("PRAGMA read_uncommitted = true;");
 	}
@@ -61,10 +66,14 @@ public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 		values.put(KEY_NAME, AppDatas.getAppName());
 		values.put(KEY_PCK_NM, AppDatas.getPackageName());
 		values.put(KEY_APP_ICO, AppDatas.getAppIcon());
-		values.put(KEY_OPT, AppDatas.getOption());
+		values.put(KEY_OPT, AppDatas.getOption() + " ");
 
 		// Inserting Row
-		db.insert(TABLE_CONTACTS, null, values);
+//		long a = db.insert(TABLE_CONTACTS, null, values);
+		
+		db.rawQuery("insert into " + TABLE_CONTACTS + " (AppName, PackageName,PackageName, Option) values ('"+AppDatas.getAppName()+"','"+AppDatas.getPackageName()+"','"+AppDatas.getAppIcon()+"','')", null);
+
+//		Log.d(MainUtil.DEBUG_TAG, String.valueOf(a));
 	}
 
 	@Override
@@ -84,11 +93,39 @@ public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 	}
 
 	@Override
-	public ArrayList<AppDatas> getAllAppDatass() {
+	public ArrayList<AppDatas> getAllAppDatas() {
 		ArrayList<AppDatas> appDataList = new ArrayList<AppDatas>();
 		// Select All Query
 		String selectQuery = "SELECT  * FROM " + TABLE_CONTACTS;
 
+		// db = this.getWritableDatabase();
+		Cursor cursor = db.rawQuery(selectQuery, null);
+
+		// looping through all rows and adding to list
+		if (cursor.moveToFirst()) {
+			do {
+				AppDatas appData = new AppDatas();
+				appData.setId(Integer.parseInt(cursor.getString(0)));
+				appData.setAppName(cursor.getString(1));
+				appData.setPackageName(cursor.getString(2));
+				appData.setAppIcon(Integer.parseInt(cursor.getString(3)));
+				appData.setOption(cursor.getString(4));
+				// Adding contact to list
+				appDataList.add(appData);
+			} while (cursor.moveToNext());
+		}
+
+		// return contact list
+		return appDataList;
+	}
+
+	@Override
+	public ArrayList<AppDatas> getAppDatasForText(String queryText) {
+		ArrayList<AppDatas> appDataList = new ArrayList<AppDatas>();
+		// Select All Query
+		String selectQuery = "SELECT  * FROM " + TABLE_CONTACTS + " where 1=1 ";
+
+		selectQuery += MainUtil.getQueryForKorean(queryText);
 		// db = this.getWritableDatabase();
 		Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -143,6 +180,16 @@ public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 				new String[] { String.valueOf(appDatas.getId()) });
 
 	}
+	
+	@Override
+	public void deleteAllAppDatas() {
+		db.delete(TABLE_CONTACTS, "1=1", null);
+
+	}
+	
+	public SQLiteDatabase getDataBase() {
+		return db;
+	}
 
 	public void dbOpen() {
 		db = this.getWritableDatabase();
@@ -151,7 +198,9 @@ public class DBAppDataHelper extends SQLiteOpenHelper implements infAppDatas {
 	}
 
 	public void dbClose() {
+		db.endTransaction();
 		db.close();
+		db = null;
 	}
 
 }

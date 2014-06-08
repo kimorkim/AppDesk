@@ -3,5 +3,9 @@
 
     <string name="app_name">AppDesk</string>
     <string name="hello_world">Hello world!</string>
+    <string name="search">검색</string>
+    <string name="search_label">앱 이름 검색</string>
+    <string name="search_hint">앱 이름을 입력하세요</string>
+    <string name="search_invoke">검색</string>
 
 </resources>

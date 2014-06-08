@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.usbsync.appdesk.MainDesk;
 import net.usbsync.appdesk.util.MainUtil;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -43,7 +44,6 @@ public class TaskPackMgr extends AsyncTask<Void, String, Boolean> {
 	protected Boolean doInBackground(Void... params) {
 		Boolean returnValue = true;
 		AppDatas data = new AppDatas();
-		Bitmap iconBitMap = null;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		AppDB.dbOpen();
 		try {
@@ -52,6 +52,7 @@ public class TaskPackMgr extends AsyncTask<Void, String, Boolean> {
 					"doInBackground 실행=================================");
 
 			if (pref.getBoolean("CheckApp", false)) {
+				AppDB.onUpgrade(AppDB.getDataBase(), 0, 0);
 				// 패키지 정보 취득
 				PackageManager pm = MainDesk.nContext.getPackageManager();
 
@@ -82,7 +83,6 @@ public class TaskPackMgr extends AsyncTask<Void, String, Boolean> {
 			e.printStackTrace();
 			returnValue = false;
 		} finally {
-			iconBitMap = null;
 			AppDB.dbClose();
 			try {
 				baos.flush();
@@ -122,6 +122,10 @@ public class TaskPackMgr extends AsyncTask<Void, String, Boolean> {
 		}
 		
 		editor.putBoolean("CheckApp", result);
+		editor.commit();
+		
+		MainDesk.MainContHandler.sendEmptyMessage(MainUtil.MAKE_APP_LISTS);
+		
 		super.onPostExecute(result);
 	}
 

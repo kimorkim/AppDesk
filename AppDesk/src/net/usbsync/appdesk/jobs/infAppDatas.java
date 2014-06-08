@@ -10,7 +10,8 @@ public interface infAppDatas {
 	public AppDatas getAppDatas(int id);
 
 	// 모든 AppDatas 리스트 가져오기
-	public ArrayList<AppDatas> getAllAppDatass();
+	public ArrayList<AppDatas> getAllAppDatas();
+
 	// 가져온 AppDatas 숫자 가져오기
 	public int getAppDatassCount();
 
@@ -19,4 +20,8 @@ public interface infAppDatas {
 
 	// AppDatas 삭제하기
 	public void deleteAppDatas(AppDatas appDatas);
+
+	public ArrayList<AppDatas> getAppDatasForText(String queryText);
+
+	public void deleteAllAppDatas();
 }
